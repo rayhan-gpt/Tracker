@@ -1,0 +1,188 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>30 Hari Tracker Ibadah</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #121212;
+      color: #f0f0f0;
+    }
+    header {
+      background-color: #1f1f1f;
+      padding: 20px;
+      text-align: center;
+    }
+    h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+    blockquote {
+      margin: 10px auto;
+      padding: 10px 20px;
+      border-left: 5px solid #4caf50;
+      color: #a5d6a7;
+      font-style: italic;
+    }
+    .tracker {
+      padding: 20px;
+      max-width: 700px;
+      margin: auto;
+    }
+    .day {
+      border: 1px solid #444;
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 10px;
+      background-color: #1e1e1e;
+    }
+    .day h3 {
+      margin: 0 0 10px 0;
+    }
+    label {
+      display: block;
+      margin: 5px 0;
+    }
+    input[type="checkbox"] {
+      margin-right: 8px;
+    }
+    .progress-container {
+      margin: 20px auto;
+      max-width: 700px;
+      background-color: #333;
+      border-radius: 5px;
+    }
+    .progress-bar {
+      height: 20px;
+      background-color: #4caf50;
+      width: 0%;
+      border-radius: 5px;
+      text-align: center;
+      color: black;
+      font-weight: bold;
+    }
+    .controls {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .controls button {
+      background-color: #4caf50;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    textarea {
+      width: 100%;
+      margin-top: 10px;
+      padding: 10px;
+      background-color: #2c2c2c;
+      color: #fff;
+      border: 1px solid #444;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🕋 30 Hari Tracker Ibadah</h1>
+    <blockquote>"Barangsiapa yang menjaga sholat, maka Allah akan menjaga hidupnya." - HR. Ahmad</blockquote>
+  </header>
+  <div class="progress-container">
+    <div class="progress-bar" id="progressBar">0%</div>
+  </div>
+  <div class="tracker" id="tracker">
+    <!-- Days will be inserted here -->
+  </div>
+  <div class="controls">
+    <button onclick="resetToday()">Reset Hari Ini</button>
+  </div>
+
+  <script>
+    const tasks = [
+      "Sholat Subuh tepat waktu",
+      "Sholat Dzuhur tepat waktu",
+      "Sholat Ashar tepat waktu",
+      "Sholat Maghrib & Isya tepat waktu",
+      "Sholat Tahajud (jika sempat)",
+      "Sholat Dhuha (minimal 2 rakaat)",
+      "Baca Al-Qur’an / Al-Waqiah",
+      "Aktivitas positif (belajar/bantu orang tua)",
+      "Jauhkan HP sebelum tidur",
+      "Tidak menonton konten negatif"
+    ];
+
+    const tracker = document.getElementById("tracker");
+    const progressBar = document.getElementById("progressBar");
+
+    function saveData(day, index, checked) {
+      localStorage.setItem(`day${day}-task${index}`, checked);
+    }
+
+    function loadData(day, index) {
+      return localStorage.getItem(`day${day}-task${index}`) === "true";
+    }
+
+    function calculateProgress() {
+      let total = 0, completed = 0;
+      for (let day = 1; day <= 30; day++) {
+        for (let i = 0; i < tasks.length; i++) {
+          total++;
+          if (loadData(day, i)) completed++;
+        }
+      }
+      const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
+      progressBar.style.width = percent + "%";
+      progressBar.textContent = percent + "%";
+    }
+
+    function resetToday() {
+      const today = new Date().getDate();
+      for (let i = 0; i < tasks.length; i++) {
+        localStorage.removeItem(`day${today}-task${i}`);
+        document.querySelectorAll(`#day${today} input[type="checkbox"]`)[i].checked = false;
+      }
+      calculateProgress();
+    }
+
+    for (let day = 1; day <= 30; day++) {
+      const dayDiv = document.createElement("div");
+      dayDiv.className = "day";
+      dayDiv.id = `day${day}`;
+      dayDiv.innerHTML = `<h3>Hari ke-${day}</h3>`;
+
+      tasks.forEach((task, index) => {
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = loadData(day, index);
+        checkbox.onchange = () => {
+          saveData(day, index, checkbox.checked);
+          calculateProgress();
+        };
+
+        const label = document.createElement("label");
+        label.appendChild(checkbox);
+        label.appendChild(document.createTextNode(task));
+        dayDiv.appendChild(label);
+      });
+
+      const journal = document.createElement("textarea");
+      journal.rows = 3;
+      journal.placeholder = "Tulis catatan harianmu di sini...";
+      journal.value = localStorage.getItem(`journal${day}`) || "";
+      journal.oninput = () => localStorage.setItem(`journal${day}`, journal.value);
+      dayDiv.appendChild(journal);
+
+      tracker.appendChild(dayDiv);
+    }
+
+    calculateProgress();
+  </script>
+</body>
+  </html>
